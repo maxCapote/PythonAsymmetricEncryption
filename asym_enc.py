@@ -1,5 +1,8 @@
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
 import os
 import argparse
 
@@ -9,20 +12,70 @@ def gen_key_pair(size=2048):
         key_size=size,
         backend=default_backend()
     )
-    public_key = private_key.public_key()
-    return private_key, public_key
+    return private_key.public_key(), private_key
 
-def save_key_pair():
-    pass
+def save_public_key(public_key):
+    pem_public = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    with open('rsa_public.pem', 'wb') as fout:
+        fout.write(pem_public)
 
-def load_key(key):
-    pass
+def save_private_key(private_key):
+    pem_private = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+    with open('rsa_private.pem', 'wb') as fout:
+        fout.write(pem_private)
 
-def encrypt(target):
-    pass
+def load_public_key(key):
+    with open(key, 'rb') as key_file:
+        public_key = serialization.load_pem_public_key(
+            key_file.read(),
+            backend=default_backend()
+        )
+    return public_key
 
-def decrypt(target):
-    pass
+def load_private_key(key):
+    with open(key, 'rb') as key_file:
+        private_key = serialization.load_pem_private_key(
+            key_file.read(),
+            password=None,
+            backend=default_backend()
+        )
+    return private_key
+
+def encrypt_func(public_key, target):
+    with open(target, 'rb') as fin:
+        plaintext = fin.read()    
+    ciphertext = public_key.encrypt(
+        plaintext,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    with open(target, 'wb') as fout:
+        fout.write(ciphertext)
+    os.rename(target, target[:-3] + 'fun')
+
+def decrypt_func(private_key, target):
+    with open(target, 'rb') as fin:
+        ciphertext = fin.read()
+    plaintext = private_key.decrypt(
+        ciphertext,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    with open(target, 'wb') as fout:
+        fout.write(plaintext)
 
 def Main():
     parser = argparse.ArgumentParser(description = 'command-line args')
@@ -33,9 +86,27 @@ def Main():
     args = parser.parse_args()
 
     if args.mode == 'generate':
-        print('things')
+        print('[+] generating key pair')
+        public_key, private_key = gen_key_pair(int(args.size))
+        print('[+] saving public key to file')
+        save_public_key(public_key)
+        print('[+] saving private key to file')
+        save_private_key(private_key)
+        print('[+] done')
+    elif args.key is not None and args.target is not None:
+        if args.mode == 'encrypt':
+            print('[+] loading public key')
+            public_key = load_public_key(args.key)
+            print('[+] encrypting file(s)')
+            encrypt_func(public_key, args.target)
+        elif args.mode == 'decrypt':
+            print('[+] loading private key')
+            private_key = load_private_key(args.key)
+            print('[+] decrypting file(s)')
+            decrypt_func(private_key, args.target)
+        print('[+] done')
     else:
-        print('Usage: python asym_enc.py [options]')
+        print('Usage: python asym_enc.py [-m MODE] [options]')
 
 if __name__ == '__main__':
     Main()
