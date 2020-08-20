@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 import os
 import argparse
 
-def gen_key_pair(size=2048):
+def gen_key_pair(size):
     private_key = rsa.generate_private_key(
         public_exponent=65537,
         key_size=size,
@@ -97,7 +97,7 @@ def decrypt_file(private_key, target):
 def Main():
     parser = argparse.ArgumentParser(description = 'command-line args')
     parser.add_argument('-m', '--mode', help='generate, encrypt, or decrypt')
-    parser.add_argument('-s', '--size', help='size of key pair in bytes for generation')
+    parser.add_argument('-s', '--size', default=2048, help='size of key pair in bytes for generation')
     parser.add_argument('-k', '--key', help='asymmetric key for encrypting or decrypting')
     parser.add_argument('-t', '--target', help='file or directory for encryption or decryption')
     args = parser.parse_args()
