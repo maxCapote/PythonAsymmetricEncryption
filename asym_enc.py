@@ -48,9 +48,27 @@ def load_private_key(key):
         )
     return private_key
 
-def encrypt_func(public_key, target):
+def encrypt_target(public_key, target):
+    if os.path.isfile(target):
+        encrypt_file(public_key, target)
+    else:
+        for root, _, files in os.walk(target):
+            for file in files:
+                encrypt_file(public_key, os.path.join(root, file))
+    pass
+
+def decrypt_target(private_key, target):
+    if os.path.isfile(target):
+        decrypt_file(private_key, target)
+    else:
+        for root, _, files in os.walk(target):
+            for file in files:
+                decrypt_file(private_key, os.path.join(root, file))
+    pass
+
+def encrypt_file(public_key, target):
     with open(target, 'rb') as fin:
-        plaintext = fin.read()    
+        plaintext = fin.read()
     ciphertext = public_key.encrypt(
         plaintext,
         padding.OAEP(
@@ -61,9 +79,8 @@ def encrypt_func(public_key, target):
     )
     with open(target, 'wb') as fout:
         fout.write(ciphertext)
-    os.rename(target, target[:-3] + 'fun')
 
-def decrypt_func(private_key, target):
+def decrypt_file(private_key, target):
     with open(target, 'rb') as fin:
         ciphertext = fin.read()
     plaintext = private_key.decrypt(
@@ -79,7 +96,7 @@ def decrypt_func(private_key, target):
 
 def Main():
     parser = argparse.ArgumentParser(description = 'command-line args')
-    parser.add_argument('-m', '--mode', help='generate key pair, encrypt, or decrypt')
+    parser.add_argument('-m', '--mode', help='generate, encrypt, or decrypt')
     parser.add_argument('-s', '--size', help='size of key pair in bytes for generation')
     parser.add_argument('-k', '--key', help='asymmetric key for encrypting or decrypting')
     parser.add_argument('-t', '--target', help='file or directory for encryption or decryption')
@@ -98,12 +115,12 @@ def Main():
             print('[+] loading public key')
             public_key = load_public_key(args.key)
             print('[+] encrypting file(s)')
-            encrypt_func(public_key, args.target)
+            encrypt_target(public_key, args.target)
         elif args.mode == 'decrypt':
             print('[+] loading private key')
             private_key = load_private_key(args.key)
             print('[+] decrypting file(s)')
-            decrypt_func(private_key, args.target)
+            decrypt_target(private_key, args.target)
         print('[+] done')
     else:
         print('Usage: python asym_enc.py [-m MODE] [options]')
