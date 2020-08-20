@@ -13,5 +13,5 @@
   * Decryption
     * python asym_enc.py -m decrypt -k rsa_private.pem -t test.txt
 * Other notes
-  * If a directory is specified instead of a file, the program will recursively encrypt or decrypt all files within the directory
+  * If a target directory is specified instead of a file, the program will recursively encrypt or decrypt all files within the directory
   * The contents of files will be encrypted, but the file extensions will remain unmodified
