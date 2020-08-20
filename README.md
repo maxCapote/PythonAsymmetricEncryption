@@ -3,7 +3,7 @@
   * https://cryptography.io/en/latest/
   * https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa/
   * https://nitratine.net/blog/post/asymmetric-encryption-and-decryption-in-python/
-* Practicing with more cryptography in Python. RSA key pairs can be created, saved, and used to encrypt files. After creation, keys are saved to separate PEM files. Keys can also be specified for specific purposes (e.g. public key for encryption and private key for decryption).
+* Practicing with more cryptography in Python. RSA key pairs can be created, saved, and used to encrypt or decrypt files. After creation, keys are saved to separate PEM files. Keys can also be specified for specific purposes (e.g. public key for encryption and private key for decryption).
 * Example usage
   * Generation
     * python asym_enc.py -m generate
