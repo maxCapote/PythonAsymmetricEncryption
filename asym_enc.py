@@ -51,20 +51,24 @@ def load_private_key(key):
 def encrypt_target(public_key, target):
     if os.path.isfile(target):
         encrypt_file(public_key, target)
+        os.rename(target, target + '.max')
     else:
         for root, _, files in os.walk(target):
             for file in files:
-                encrypt_file(public_key, os.path.join(root, file))
-    pass
+                filename = os.path.join(root, file)
+                encrypt_file(public_key, filename)
+                os.rename(filename, filename + '.max')
 
 def decrypt_target(private_key, target):
     if os.path.isfile(target):
         decrypt_file(private_key, target)
+        os.rename(target, target[:-4])
     else:
         for root, _, files in os.walk(target):
             for file in files:
-                decrypt_file(private_key, os.path.join(root, file))
-    pass
+                filename = os.path.join(root, file)
+                decrypt_file(private_key, filename)
+                os.rename(filename, filename[:-4])
 
 def encrypt_file(public_key, target):
     with open(target, 'rb') as fin:
@@ -94,7 +98,7 @@ def decrypt_file(private_key, target):
     with open(target, 'wb') as fout:
         fout.write(plaintext)
 
-def Main():
+def main():
     parser = argparse.ArgumentParser(description = 'command-line args')
     parser.add_argument('-m', '--mode', help='generate, encrypt, or decrypt')
     parser.add_argument('-s', '--size', default=2048, help='size of key pair in bytes for generation')
@@ -126,4 +130,4 @@ def Main():
         print('Usage: python asym_enc.py [-m MODE] [options]')
 
 if __name__ == '__main__':
-    Main()
+    main()

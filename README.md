@@ -10,7 +10,7 @@
     * python asym_enc.py -m decrypt -k rsa_private.pem -t test.txt
 * Other notes
   * If a target directory is specified instead of a file, the program will recursively encrypt or decrypt all files within the directory
-  * The contents of files will be encrypted, but the file extensions will remain unmodified
+  * The contents of files will be encrypted and the '.max' extension is appended
 * Primary references
   * https://cryptography.io/en/latest/
   * https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa/
